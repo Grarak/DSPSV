@@ -4,6 +4,7 @@ use crate::jit::MemoryAmount;
 use std::arch::asm;
 use std::hint::unreachable_unchecked;
 use std::intrinsics::unlikely;
+use std::ptr;
 
 mod handler {
     use crate::hle::hle::{get_regs, get_regs_mut, Hle};
@@ -199,6 +200,7 @@ mod handler {
         }
     }
 }
+use crate::hle::memory::mmu::{MMU_BLOCK_SIZE, MMU_SIZE};
 use crate::jit::jit_asm::JitAsm;
 use handler::*;
 

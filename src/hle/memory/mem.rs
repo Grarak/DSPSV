@@ -90,10 +90,17 @@ impl Memory {
         if CPU == ARM7 || TCM {
             let base_ptr = get_mem_mmu!(self, CPU).get_base_ptr(aligned_addr);
             if likely(!base_ptr.is_null()) {
-                return unsafe {
+                let ret = unsafe {
                     (base_ptr.add((aligned_addr & (MMU_BLOCK_SIZE - 1)) as usize) as *const T)
                         .read()
                 };
+                debug_println!(
+                    "{:?} mmu read at {:x} with value {:x}",
+                    CPU,
+                    aligned_addr,
+                    ret.into()
+                );
+                return ret;
             }
         }
 

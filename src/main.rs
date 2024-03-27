@@ -228,7 +228,7 @@ fn execute_jit(hle: &mut Hle) {
 // Must be pub for vita
 pub fn main() {
     set_thread_prio_affinity(ThreadPriority::Low, ThreadAffinity::Core0);
-    
+
     if DEBUG_LOG {
         std::env::set_var("RUST_BACKTRACE", "full");
     }
