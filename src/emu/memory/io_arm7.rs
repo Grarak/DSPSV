@@ -1,4 +1,4 @@
-use crate::emu::emu::{get_cm_mut, get_common_mut, get_cpu_regs, get_cpu_regs_mut, get_mem, Emu};
+use crate::emu::emu::{get_cm, get_cm_mut, get_common_mut, get_cpu_regs, get_cpu_regs_mut, get_mem, Emu};
 use crate::emu::memory::dma::Dma;
 use crate::emu::rtc::Rtc;
 use crate::emu::spi::Spi;
@@ -58,13 +58,13 @@ impl IoArm7 {
                 io32(0xD4) => self.dma.get_sad::<3>(),
                 io32(0xD8) => self.dma.get_dad::<3>(),
                 io32(0xDC) => self.dma.get_cnt::<3>(),
-                io16(0x100) => self.timers.get_cnt_l::<0>(get_cm_mut!(emu)),
+                io16(0x100) => self.timers.get_cnt_l::<0>(get_cm!(emu)),
                 io16(0x102) => self.timers.get_cnt_h::<0>(),
-                io16(0x104) => self.timers.get_cnt_l::<1>(get_cm_mut!(emu)),
+                io16(0x104) => self.timers.get_cnt_l::<1>(get_cm!(emu)),
                 io16(0x106) => self.timers.get_cnt_h::<1>(),
-                io16(0x108) => self.timers.get_cnt_l::<2>(get_cm_mut!(emu)),
+                io16(0x108) => self.timers.get_cnt_l::<2>(get_cm!(emu)),
                 io16(0x10A) => self.timers.get_cnt_h::<2>(),
-                io16(0x10C) => self.timers.get_cnt_l::<3>(get_cm_mut!(emu)),
+                io16(0x10C) => self.timers.get_cnt_l::<3>(get_cm!(emu)),
                 io16(0x10E) => self.timers.get_cnt_h::<3>(),
                 io16(0x130) => common.input.get_key_input(),
                 io16(0x136) => common.input.get_ext_key_in(),

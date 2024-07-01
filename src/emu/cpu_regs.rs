@@ -110,7 +110,12 @@ impl CpuRegs {
 
     pub fn halt(&mut self, bit: u8) {
         debug_println!("{:?} halt with bit {}", self.cpu_type, bit);
-        self.halt |= 1;
+        self.halt |= 1 << bit;
+    }
+
+    pub fn unhalt(&mut self, bit: u8) {
+        debug_println!("{:?} unhalt with bit {}", self.cpu_type, bit);
+        self.halt &= !(1 << bit);
     }
 
     pub fn is_halted(&self) -> bool {
@@ -130,7 +135,7 @@ impl CpuRegs {
                 self.schedule_interrupt(cycle_manager);
             } else if self.cpu_type == ARM7 || self.ime != 0 {
                 debug_println!("{:?} unhalt send interrupt {:?}", self.cpu_type, flag);
-                self.halt &= !1;
+                self.unhalt(0);
             }
         }
     }
@@ -160,7 +165,7 @@ impl CpuRegs {
         };
         if interrupted {
             exception_handler::handle::<CPU, false>(emu, 0, ExceptionVector::NormalInterrupt);
-            get_cpu_regs_mut!(emu, CPU).halt &= !1;
+            get_cpu_regs_mut!(emu, CPU).unhalt(0);
         }
     }
 }

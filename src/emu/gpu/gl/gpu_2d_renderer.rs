@@ -594,7 +594,7 @@ impl Gpu2dProgram {
 
         let draw_call = |bg_num: u8, bg_mode: BgMode| {
             if bg_mode == BgMode::Affine || bg_mode == BgMode::Large {
-                todo!("{bg_mode:?}")
+                // todo!("{bg_mode:?}")
             }
 
             gl::BindFramebuffer(gl::FRAMEBUFFER, common.bg_fbos[bg_num as usize].fbo);

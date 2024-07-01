@@ -173,7 +173,7 @@ impl Memory {
     }
 
     fn write_internal<const CPU: CpuType, const TCM: bool, T: Convert>(&mut self, addr: u32, value: T, emu: &mut Emu) {
-        debug_println!("{:?} memory write at {:x} with value {:x}", CPU, addr, value.into(),);
+        debug_println!("{:?} memory write at {:x} with value {:x}", CPU, addr, value.into());
         let aligned_addr = addr & !(mem::size_of::<T>() as u32 - 1);
 
         let addr_base = aligned_addr & 0xFF000000;

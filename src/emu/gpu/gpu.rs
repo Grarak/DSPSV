@@ -117,9 +117,9 @@ struct DispStat {
     v_blank_flag: u1,
     h_blank_flag: u1,
     v_counter_flag: u1,
-    v_blank_irq_enable: u1,
-    h_blank_irq_enable: u1,
-    v_counter_irq_enable: u1,
+    v_blank_irq_enable: bool,
+    h_blank_irq_enable: bool,
+    v_counter_irq_enable: bool,
     not_used: u1,
     v_count_msb: u1,
     v_count_setting: u8,
@@ -141,7 +141,7 @@ pub struct PowCnt1 {
 pub struct Gpu {
     disp_stat: [DispStat; 2],
     pub pow_cnt1: u16,
-    disp_cap_cnt: u32,
+    pub disp_cap_cnt: u32,
     swapchain: Arc<Swapchain>,
     frame_rate_counter: FrameRateCounter,
     pub frame_limit: bool,
@@ -200,10 +200,6 @@ impl Gpu {
         self.disp_cap_cnt = (self.disp_cap_cnt & !mask) | (value & mask);
     }
 
-    pub fn get_fps(&self) -> u16 {
-        self.frame_rate_counter.fps.load(Ordering::Relaxed)
-    }
-
     pub fn on_scanline256_event(emu: &mut Emu) {
         let gpu = &mut get_common_mut!(emu).gpu;
 
@@ -220,7 +216,7 @@ impl Gpu {
         for i in 0..2 {
             let disp_stat = &mut gpu.disp_stat[i];
             disp_stat.set_h_blank_flag(u1::new(1));
-            if bool::from(disp_stat.h_blank_irq_enable()) {
+            if disp_stat.h_blank_irq_enable() {
                 get_cpu_regs_mut!(emu, CpuType::from(i as u8)).send_interrupt(InterruptFlag::LcdHBlank, get_cm_mut!(emu));
             }
         }
@@ -234,16 +230,19 @@ impl Gpu {
         gpu.v_count += 1;
         match gpu.v_count {
             192 => {
-                // unsafe { gpu.gpu_2d_renderer.unwrap_unchecked().as_mut() }.on_frame(get_mem_mut!(emu));
                 unsafe { gpu.gpu_2d_renderer.unwrap_unchecked().as_mut() }.start_drawing(get_mem_mut!(emu), PowCnt1::from(gpu.pow_cnt1));
 
                 for i in 0..2 {
                     let disp_stat = &mut gpu.disp_stat[i];
                     disp_stat.set_v_blank_flag(u1::new(1));
-                    if bool::from(disp_stat.v_blank_irq_enable()) {
+                    if disp_stat.v_blank_irq_enable() {
                         get_cpu_regs_mut!(emu, CpuType::from(i as u8)).send_interrupt(InterruptFlag::LcdVBlank, get_cm_mut!(emu));
                         io_dma!(emu, CpuType::from(i as u8)).trigger_all(DmaTransferMode::StartAtVBlank, get_cm_mut!(emu));
                     }
+                }
+
+                if gpu.gpu_3d.flushed {
+                    gpu.gpu_3d.swap_buffers();
                 }
             }
             262 => {
@@ -273,7 +272,7 @@ impl Gpu {
             debug_println!("v match {:x} {} {}", u16::from(gpu.disp_stat[i]), v_match, gpu.v_count);
             if gpu.v_count == v_match {
                 gpu.disp_stat[i].set_v_counter_flag(u1::new(1));
-                if bool::from(gpu.disp_stat[i].v_counter_irq_enable()) {
+                if gpu.disp_stat[i].v_counter_irq_enable() {
                     get_cpu_regs_mut!(emu, CpuType::from(i as u8)).send_interrupt(InterruptFlag::LcdVCounterMatch, get_cm_mut!(emu));
                 }
             } else {

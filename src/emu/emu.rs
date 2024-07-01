@@ -126,6 +126,13 @@ macro_rules! io_timers_mut {
 }
 pub(crate) use io_timers_mut;
 
+macro_rules! get_cm {
+    ($emu:expr) => {
+        &crate::emu::emu::get_common!($emu).cycle_manager
+    };
+}
+pub(crate) use get_cm;
+
 macro_rules! get_cm_mut {
     ($emu:expr) => {
         &mut crate::emu::emu::get_common_mut!($emu).cycle_manager

@@ -176,6 +176,7 @@ fn execute_jit<const ARM7_HLE: bool>(emu: &mut UnsafeCell<Emu>) {
     let cpu_regs_arm7 = get_cpu_regs!(emu, ARM7);
 
     let cm = &mut get_common_mut!(emu).cycle_manager;
+    let gpu_3d = &mut get_common_mut!(emu).gpu.gpu_3d;
 
     loop {
         let next_event_in_cycles = min(cm.next_event_in_cycles(), 32);
@@ -207,10 +208,14 @@ fn execute_jit<const ARM7_HLE: bool>(emu: &mut UnsafeCell<Emu>) {
             }
         }
 
-        if unlikely(cm.check_events(jit_asm_arm9.emu)) {
+        if unlikely(cm.check_events(emu)) {
             jit_asm_arm9.runtime_data.idle_loop = false;
-            jit_asm_arm7.runtime_data.idle_loop = false;
+            if !ARM7_HLE {
+                jit_asm_arm7.runtime_data.idle_loop = false;
+            }
         }
+
+        gpu_3d.run_cmds(cm.get_cycles(), emu);
     }
 }
 
